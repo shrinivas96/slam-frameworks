@@ -1,22 +1,21 @@
-% prepare the workspace
-addpath('tools')
+%% prepare the workspace
 clc
 more off
 close all
-clear all
+clearvars
+
+addpath('tools')
+addpath('data')
 
 % Load laser scans and robot poses.
-% load("../data/laser")
-laser = read_robotlaser('../data/csail.log');
-
-##clc
-##clearvars -except laser
+% load("data/laser")
+laser = read_robotlaser('data/csail.log');
 
 % Extract robot poses: Nx3 matrix where each row is in the form: [x y theta]
 poses = [laser.pose];
 poses = reshape(poses,3,size(poses,2)/3)';
 
-### Section 2 load initial settings
+%% Section 2 load initial settings
 
 % Initial cell occupancy probability.
 prior = 0.50;
@@ -25,7 +24,7 @@ probOcc = 0.9;
 probFree = 0.35;
 
 % Map grid size in meters. Decrease for better resolution.
-gridSize = 0.1;
+gridSize = 0.5;
 
 % Set up map boundaries and initialize map.
 border = 30;
@@ -50,24 +49,26 @@ disp('Map initialized. Map size:'), disp(size(map))
 % Map offset used when converting from world to map coordinates.
 offset = [offsetX; offsetY];
 
-### main code functionality
+%% main code functionality
 
 % Main loop for updating map cells.
 % You can also take every other point when debugging to speed up the loop (t=1:2:size(poses,1))
-for(t=1:size(poses,1)) % size(poses,1)
-	t
-	% Robot pose at time t.
-	robPose = [poses(t,1);poses(t,2);poses(t,3)];
-	
-	% Laser scan made at time t.
-	sc = laser(1,t);
-	% Compute the mapUpdate, which contains the log odds values to add to the map.
-	[mapUpdate, robPoseMapFrame, laserEndPntsMapFrame] = inv_sensor_model(map, sc, robPose, gridSize, offset, probOcc, probFree);
-
-	mapUpdate -= logOddsPrior*ones(size(map));
-	% Update the occupancy values of the affected cells.
-	map += mapUpdate;
-	
-	% Plot current map and robot trajectory so far.
-  plot_map(map, mapBox, robPoseMapFrame, poses, laserEndPntsMapFrame, gridSize, offset, t);
-endfor
+% for t = 1:size(poses, 1)
+for t = 1:25
+%     fprintf('%d \n', t);
+    
+    % Robot pose at time t.
+    robPose = [poses(t,1);poses(t,2);poses(t,3)];
+    
+    % Laser scan made at time t.
+    sc = laser(1,t);
+    % Compute the mapUpdate, which contains the log odds values to add to the map.
+    [mapUpdate, robPoseMapFrame, laserEndPntsMapFrame] = inv_sensor_model(map, sc, robPose, gridSize, offset, probOcc, probFree);
+    
+    mapUpdate = mapUpdate - logOddsPrior*ones(size(map));
+    % Update the occupancy values of the affected cells.
+    map = map + mapUpdate;
+    
+    % Plot current map and robot trajectory so far.
+    plot_map(map, mapBox, robPoseMapFrame, poses, laserEndPntsMapFrame, gridSize, offset, t);
+end

@@ -36,7 +36,7 @@ x_n = x(1);
 y_n = y(1);
 if y(1) < y(2), ystep = 1; else ystep = -1; end 
 for n = 1:delx+1
-    if steep,
+    if steep
         X(n) = x_n;
         Y(n) = y_n;
     else
@@ -45,7 +45,8 @@ for n = 1:delx+1
     end    
     x_n = x_n + 1;
     error = error + dely;
-    if bitshift(error,1) >= delx, % same as -> if 2*error >= delx, 
+    % if bitshift(error, 1) >= delx   % same as -> if 2*error >= delx, 
+    if 2*error >= delx
         y_n = y_n + ystep;
         error = error - delx;
     end    
@@ -55,7 +56,13 @@ temp = X;
 X = Y;
 Y = temp;
 
+end
 
 function [q,r] = swap(s,t)
 % function SWAP
 q = t; r = s;
+end
+
+function [b, a] = swap2(a, b)
+    % SWAP function
+end
