@@ -11,19 +11,16 @@ def read_robotlaser(tokens):
     # all tokens converted into float values
     numTokens = tools.str2double(tokens)
 
-    # empty skeleton
-    currentReading = laserReading()
-
     # to track the values present in each line
     col = 2 
 
-    currentReading.start_angle = numTokens[col]
+    start_angle = numTokens[col]
     col += 2                        # 1: next, 1: skip FOV
 
-    currentReading.angular_resolution = numTokens[col]
+    angular_resolution = numTokens[col]
     col += 1
 
-    currentReading.maximum_range = numTokens[col]
+    maximum_range = numTokens[col]
     col += 3                        # 1: next, 2: skip accuracy, remission_mode
 
     # the next numReadings values in the line are the laser ranges
@@ -31,7 +28,7 @@ def read_robotlaser(tokens):
     col += 1                        # 1: next
 
     # for reasons unknown, the original script from freiburg took 
-    currentReading.ranges = numTokens[col:col+numReadings]
+    ranges = numTokens[col:col+numReadings]
     col += numReadings
 
     numRemissions = int(numTokens[col])
@@ -40,17 +37,19 @@ def read_robotlaser(tokens):
     laserPose = numTokens[col:col+3]
     col += 3                        # 3: laser pose
 
-    currentReading.pose = numTokens[col:col+3]
+    pose = numTokens[col:col+3]
     col += 3                        # 3: robot pose
 
     # !! << this is not verified yet >> !!
     # translating the laser end points based on the current pose
-    laserEndPtsTrans = np.matmul(tools.v2t(currentReading.pose), tools.v2t(laserPose))
+    laserEndPtsTrans = np.matmul(tools.v2t(pose), tools.v2t(laserPose))
     invLaserOffset = np.linalg.inv(laserEndPtsTrans)
-    currentReading.laser_offset = tools.t2v(invLaserOffset)
+    laser_offset = tools.t2v(invLaserOffset)
     col += 5
 
-    currentReading.timestamp = numTokens[col]
+    timestamp = numTokens[col]
+
+    currentReading = laserReading(start_angle, angular_resolution, maximum_range, ranges, pose, laser_offset, timestamp)
 
     return currentReading
 
@@ -63,21 +62,20 @@ def read_odom(tokens):
     # all tokens converted into float values
     numTokens = tools.str2double(tokens)
     
-    # empty skeleton instantiated
-    currentOdometry = odomReading()
-
     col = 1
 
-    currentOdometry.state = numTokens[col:col+3]
+    state = numTokens[col:col+3]
     col += 3                            # x, y, theta
 
-    currentOdometry.ctrl = numTokens[col:col+2]
+    ctrl = numTokens[col:col+2]
     col += 2                            # tv, rv
 
-    currentOdometry.accel = numTokens[col]
+    accel = numTokens[col]
     col += 1                            # accel
 
-    currentOdometry.timestamp = numTokens[col]
+    timestamp = numTokens[col]
+
+    currentOdometry = odomReading(state, ctrl, accel, timestamp)
 
     return currentOdometry
 
