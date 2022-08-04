@@ -49,17 +49,23 @@ def read_robotlaser(tokens):
     pose = numTokens[col:col+3]
     col += 3                        # 3: robot pose
 
+    # this was the old wrong one that created the appaling figure <<<<<<<<
+    # laserEndPtsTrans = np.matmul(tools.v2t(pose), tools.v2t(laserPose))
+    # invLaserOffset = np.linalg.inv(laserEndPtsTrans)
+    # laser_offset = tools.t2v(invLaserOffset)
+    # col += 5
+
     # !! << this is not verified yet >> !!
     # translating the laser end points based on the current pose
-    laserEndPtsTrans = np.matmul(tools.v2t(pose), tools.v2t(laserPose))
-    invLaserOffset = np.linalg.inv(laserEndPtsTrans)
-    laser_offset = tools.t2v(invLaserOffset)
+    invPoseHomogeneous = np.linalg.inv(tools.v2t(pose))
+    laserOffsetHomogeneous = np.matmul(invPoseHomogeneous, tools.v2t(laserPose))
+    laser_offset = tools.t2v(laserOffsetHomogeneous)
     col += 5
 
     timestamp = numTokens[col]
 
     currentReading = laserReading(
-        start_angle, angular_resolution, maximum_range, ranges, pose, laser_offset, timestamp)
+        start_angle, angular_resolution, maximum_range, ranges, pose, laserPose, laser_offset, timestamp)
 
     return currentReading
 

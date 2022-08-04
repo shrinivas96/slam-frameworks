@@ -67,12 +67,13 @@ class laserReading():
     # ROBOTLASER1 laser_type start_angle field_of_view angular_resolution maximum_range accuracy remission_mode ...
     # num_readings [range_readings] laser_pose_x laser_pose_y laser_pose_theta robot_pose_x robot_pose_y robot_pose_theta 
     # laser_tv laser_rv forward_safety_dist side_safty_dist
-    def __init__(self, start_angle, ang_res, max_range, ranges, pose, laser_offset, timestamp) -> None:
+    def __init__(self, start_angle, ang_res, max_range, ranges, pose, laser_pose, laser_offset, timestamp) -> None:
         self.start_angle = start_angle
         self.angular_resolution = ang_res
         self.maximum_range = max_range
         self.ranges = ranges
         self.pose = pose.reshape((3,1))
+        self.laser_pose = laser_pose.reshape((3, 1))
         self.laser_offset = laser_offset.reshape((3,1))
         self.timestamp = timestamp
 
